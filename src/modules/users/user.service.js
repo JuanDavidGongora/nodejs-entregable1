@@ -1,3 +1,4 @@
+
 import User from "./users.model.js";
 
 export class UserService {
@@ -6,7 +7,7 @@ export class UserService {
         return await User.findOne({
             where: {
                 id: id,
-                status: "available"
+                status: 'available',
 
         }})
 
@@ -14,8 +15,17 @@ export class UserService {
 
     static async findAll(){
         return await User.findAll({
+            attributes: {
+                exclude: [
+                  'password',
+                  'passwordChangedAt',
+                  'createdAt',
+                  'updatedAt',
+                  'status',
+                ],
+              },
             where: {
-                status: "available"
+                status: 'available',
             }
         })
 
@@ -32,5 +42,14 @@ export class UserService {
     static async delete(user){
         return await user.update({status:"disabled"})
 
+    }
+
+    static async findOneByEmail(email) {
+        return await User.findOne({
+          where: {
+            status: 'available',
+            email: email,
+          },
+        });
     }
 }
