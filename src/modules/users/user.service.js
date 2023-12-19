@@ -1,4 +1,5 @@
 
+import Repair from "../repairs/repairs.model.js";
 import User from "./users.model.js";
 
 export class UserService {
@@ -26,7 +27,12 @@ export class UserService {
               },
             where: {
                 status: 'available',
-            }
+            },
+            include: [
+                {
+                    model: Repair
+                }
+            ]
         })
 
     }
