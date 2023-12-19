@@ -1,129 +1,63 @@
-import { RepairService } from './repairs.service.js';
+import { catchAsync } from "../../common/errors/catchAsync.js";
+import { validateCreateRepair } from "./repairs.schema.js";
+import { RepairService } from "./repairs.service.js";
 
 export const findAllRepairs = async (req, res) => {
   try {
-    const repairs = await RepairService.findAll({
-      attributes: [
-        'id',
-        'date',
-        'userId',
-        'status',
-        'motorsNumber',
-        'description',
-      ],
-    });
+    const repairs = await RepairService.findAll();
 
     return res.status(200).json(repairs);
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
-      status: 'fail',
-      message: 'Something went very wrong!🧨',
+      status: "fail",
+      message: "Something went very wrong! 🧨",
     });
   }
 };
-export const createRepair = async (req, res) => {
-  try {
-    const { date, userId, motorsNumber, description } = req.body;
 
-    const repair = await RepairService.create({
-      date,
-      userId,
-      motorsNumber,
-      description,
-    });
+export const createRepair = catchAsync(async (req, res) => {
+  const { hasError, errorMessages, repairData } = validateCreateRepair(
+    req.body
+  );
 
-    return res.status(201).json(repair);
-  } catch (error) {
-    return res.status(500).json({
-      status: 'fail',
-      message: 'Something went very wrong!🧨',
+  if (hasError) {
+    return res.status(422).json({
+      status: "error",
+      message: errorMessages,
     });
   }
-};
-export const findOneRepair = async (req, res) => {
-  try {
-    const { id } = req.params;
 
-    const repair = await RepairService.findOne(id, {
-      attributes: [
-        'id',
-        'date',
-        'userId',
-        'status',
-        'motorsNumber',
-        'description',
-      ],
-    });
+  const repair = await RepairService.create(repairData);
 
-    if (!repair) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'repair not found',
-      });
-    }
+  return res.status(201).json(repair);
+});
 
-    return res.status(200).json(repair);
-  } catch (error) {
-    return res.status(500).json({
-      status: 'fail',
-      message: 'Something went very wrong!🧨',
-    });
-  }
-};
+export const findOneRepair = catchAsync(async (req, res) => {
+  const { repair } = req;
+
+  return res.status(200).json(repair);
+});
+
 export const updateRepair = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { motorsNumber, description } = req.body;
-
-    const repair = await RepairService.findOne(id);
-
-    if (!repair) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'repair not found',
-      });
-    }
-
-    repair.motorsNumber = motorsNumber || repair.motorsNumber;
-    repair.description = description || repair.description;
+    const { repair } = req;
 
     const repairUpdated = await RepairService.update(repair);
 
     return res.status(200).json(repairUpdated);
   } catch (error) {
     return res.status(500).json({
-      status: 'fail',
-      message: 'Something went very wrong!🧨',
+      status: "fail",
+      message: "Something went very wrong! 🧨",
     });
   }
 };
-export const deleteRepair = async (req, res) => {
-  try {
-    const { id } = req.params;
 
-    const repair = await RepairService.findOne(id, ['pending', 'completed']);
+export const deleteRepair = catchAsync(async (req, res) => {
+  const { repair } = req;
 
-    if (repair?.status === 'completed') {
-      return res.status(400).json({
-        status: 'error',
-        message: 'the repair has been already completed',
-      });
-    }
+  await RepairService.delete(repair);
 
-    if (!repair) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'repair not found',
-      });
-    }
-
-    await RepairService.delete(repair);
-
-    return res.status(204).json(null);
-  } catch (error) {
-    return res.status(500).json({
-      status: 'fail',
-      message: 'Something went very wrong!🧨',
-    });
-  }
-};
+  return res.status(204).json(null);
+});

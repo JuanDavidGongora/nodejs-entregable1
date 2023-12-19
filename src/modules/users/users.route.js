@@ -30,12 +30,16 @@ router
   router
 
   .route('/')
-  .get(findAllUser)
+  .get(protect, findAllUser)
   .post(createUser);
 
 router
 
   .use(protect);
+
+  router
+  
+  .use("/:id", validateExistUser);
 
   router
   
@@ -47,8 +51,8 @@ router
 
   router
   .route('/:id')
-  .get(restrictTo("employee"), validateExistUser, findOneUser)
-  .patch(validateExistUser, protectAccountOwner, updateUser)
-  .delete(validateExistUser, protectAccountOwner, deleteUser);
+  .get(findOneUser)
+  .patch(validateExistUser, protectAccountOwner, restrictTo("client, employee"), updateUser)
+  .delete(validateExistUser, protectAccountOwner, restrictTo("client, employee"), deleteUser);
 
 

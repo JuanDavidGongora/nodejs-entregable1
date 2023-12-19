@@ -1,37 +1,25 @@
-import Zod from "zod";
+import z from "zod";
+import { extractValidationData } from "./../../common/utils/extractErrorData.js";
 
+const repairSchema = z.object({
+  date: z.string(),
+  motorsNumber: z.number(),
+  description: z.string().min(10),
+  userId: z.number(),
+});
 
-const createRepairSchema = Zod.object({
-    date: Zod.date().required(),
-    motorsNumber: Zod.number().required(),
-    description: Zod.string().required(),
-  });
-  
-  export const createRepair = async (req, res) => {
-    try {
-      const { date, motorsNumber, description } = req.body;
-  
-      // Validar los datos de entrada
-      const result = createRepairSchema.validate(req.body);
-  
-      if (result.errors) {
-        return res.status(400).json({
-          errors: result.errors,
-        });
-      }
-  
-      // Crear la reparación
-      const repair = await repair.create({
-        date,
-        motorsNumber,
-        description,
-      });
-  
-      return res.status(201).json(repair);
-    } catch (error) {
-      return res.status(500).json({
-        status: "fail",
-        message: "Something went wrong",
-      });
-    }
+export function validateCreateRepair(data) {
+  const result = repairSchema.safeParse(data);
+
+  const {
+    hasError,
+    errorMessages,
+    data: repairData,
+  } = extractValidationData(result);
+
+  return {
+    hasError,
+    errorMessages,
+    repairData,
   };
+}
