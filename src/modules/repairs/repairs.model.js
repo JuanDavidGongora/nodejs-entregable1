@@ -12,7 +12,7 @@ const Repair = sequelize.define("repairs", {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  motorsNumber: {
+  description: {
     type: DataTypes.TEXT,
     allowNull: false,
   },
